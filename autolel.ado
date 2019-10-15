@@ -11,7 +11,7 @@ Modification Date:  23 May 2017 -- Carlos Felipe Balcazar
 Modification Date:	6 Jun 2017 -- Natalia Garcia Pena
 Do-file version:    04
 References:
-Output:             
+Output:             Output for LAC Equity Lab
 ====================================================================*/
 
 /*====================================================================
