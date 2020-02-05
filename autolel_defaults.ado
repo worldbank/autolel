@@ -19,7 +19,7 @@ version 14.0
 syntax [anything(name=anything)],  [ ///
 circaman countries lac years circadef   ///
 twocross globals series_breaks path(string) paths subregion ///
-country(string) module(string) export filter comp_gic comp_lip ///
+country(string) module(string) export filter comp_gic comp_lip reg_represent ///
 ]
 
 /*====================================================================
@@ -60,7 +60,7 @@ if ("`twocross'" != "" & "`country'" != "") {
 			else if upper("`country'") == "ECU" return local twoyears  "2007 2012 2012 2017 2007 2017" // Same
 			else if upper("`country'") == "SLV" return local twoyears  "2007 2012 2012 2017 2007 2017" // Same
 			else if upper("`country'") == "GTM" return local twoyears  ". . . . 2006 2014"			 // Dif
-			else if upper("`country'") == "HND" return local twoyears  "2007 2012 2012 2016 2007 2016" // Same
+			else if upper("`country'") == "HND" return local twoyears  "2007 2012 2012 2016 2007 2017" // Same
 			else if upper("`country'") == "MEX" return local twoyears  "2005 2010 2010 2014 2005 2014" // Dif
 			else if upper("`country'") == "NIC" return local twoyears  "2005 2009 2009 2014 2005 2014" // Dif
 			else if upper("`country'") == "PAN" return local twoyears  "2008 2012 2012 2017 2008 2017" // Same
@@ -147,7 +147,7 @@ if ("`circaman'" == "circaman") {
 			else if ("`code'" == "ECU") local years  "2007 2012 2012 2017 2007 2017" // Same
 			else if ("`code'" == "SLV") local years  "2007 2012 2012 2017 2007 2017" // Same
 			else if ("`code'" == "GTM") local years  ". . . . 2006 2014"			 // Dif
-			else if ("`code'" == "HND") local years  "2007 2012 2012 2016 2007 2016" // Dif (Humberto)
+			else if ("`code'" == "HND") local years  "2007 2012 2012 2016 2007 2017" // Same
 			else if ("`code'" == "MEX") local years  "2006 2010 2010 2014 2005 2014" // Dif
 			else if ("`code'" == "NIC") local years  "2005 2009 2009 2014 2005 2014" // Dif
 			else if ("`code'" == "PAN") local years  "2008 2012 2012 2017 2008 2017" // Dif
@@ -170,7 +170,7 @@ if ("`circaman'" == "circaman") {
 			else if ("`code'" == "ECU") local years "2007 2012 2017"
 			else if ("`code'" == "SLV") local years "2007 2012 2017"
 			else if ("`code'" == "GTM") local years "2006 2014 2014"
-			else if ("`code'" == "HND") local years "2007 2012 2016"
+			else if ("`code'" == "HND") local years "2007 2012 2017"
 			else if ("`code'" == "MEX") local years "2008 2012 2016"
 			else if ("`code'" == "NIC") local years "2005 2009 2014"
 			else if ("`code'" == "PAN") local years "2007 2012 2017"
@@ -292,10 +292,49 @@ if "`comp_lip'"!= "" {
 }
 
 
+/*====================================================================
+5: Subregional - regional representativity of surveys (For HOI and others)
+====================================================================*/
+* Using GMD standard regions
+if ("`reg_represent'" != "") {
+
+	local arg_reg "region_est2"
+	local bol_reg "region_est1"
+	local bra_reg "region_est2"
+	local chl_reg "region_original" // PRO 2
+	* COL NA
+	local cri_reg "region_est1"
+	local dom_reg "region_est1"
+	local ecu_reg "region_est1"
+	local slv_reg "region_est2"
+	local gtm_reg "region_est3"
+	local hti_reg "region_est1"
+	local hnd_reg "domi"
+	* MEX NA
+	local nic_reg "region_est1"
+	local pan_reg "region_est2"
+	local pry_reg "region_est1"
+	local per_reg "region_est1"
+	local ury_reg "region_est1"
+	
+	cap gen states = ""
+	
+	levelsof pais, local(paises)
+	foreach pais of local paises {
+		cap confirm string var ``pais'_reg'
+		if _rc {
+			tempvar aux
+			decode ``pais'_reg', gen(`aux')
+			replace states = `aux'
+		}
+		else replace states = ``pais'_reg'
+	}
+} // end reg_represent
+
 
 
 /*====================================================================
-5: Breaks in series
+6: Breaks in series
 ====================================================================*/
 
 /* Series from data comparability excel for Project 3: Z:\public\Stats_Team\LAC Equity Lab\Dashboards\data_availability\Comparability PRO(03)\Comparability_SEDLAC_PR03_v01.xlsx"
@@ -313,22 +352,23 @@ if ("`series_breaks'" != "")  {
 	decode countrycode, gen(`country_decode')
 	
 	cap gen series =.
-		
-	replace series = 3 if lower(`country_decode') == "arg" & year == 2003
-	replace series = 3 if lower(`country_decode') == "arg" & year == 2004
-	replace series = 3 if lower(`country_decode') == "arg" & year == 2005
-	replace series = 3 if lower(`country_decode') == "arg" & year == 2006
-	replace series = 3 if lower(`country_decode') == "arg" & year == 2007
-	replace series = 3 if lower(`country_decode') == "arg" & year == 2008
-	replace series = 3 if lower(`country_decode') == "arg" & year == 2009
-	replace series = 3 if lower(`country_decode') == "arg" & year == 2010
-	replace series = 3 if lower(`country_decode') == "arg" & year == 2011
-	replace series = 3 if lower(`country_decode') == "arg" & year == 2012
-	replace series = 2 if lower(`country_decode') == "arg" & year == 2013
-	replace series = 2 if lower(`country_decode') == "arg" & year == 2014
-	replace series = 4 if lower(`country_decode') == "arg" & year == 2015
+
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2003
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2004
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2005
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2006
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2007
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2008
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2009
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2010
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2011
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2012
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2013
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2014
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2015
 	replace series = 1 if lower(`country_decode') == "arg" & year == 2016
 	replace series = 1 if lower(`country_decode') == "arg" & year == 2017
+	replace series = 1 if lower(`country_decode') == "arg" & year == 2018
 	replace series = 2 if lower(`country_decode') == "bol" & year == 2000
 	replace series = 2 if lower(`country_decode') == "bol" & year == 2001
 	replace series = 2 if lower(`country_decode') == "bol" & year == 2002
@@ -344,6 +384,7 @@ if ("`series_breaks'" != "")  {
 	replace series = 1 if lower(`country_decode') == "bol" & year == 2015
 	replace series = 1 if lower(`country_decode') == "bol" & year == 2016
 	replace series = 1 if lower(`country_decode') == "bol" & year == 2017
+	replace series = 1 if lower(`country_decode') == "bol" & year == 2018
 	replace series = 2 if lower(`country_decode') == "bra" & year == 2001
 	replace series = 2 if lower(`country_decode') == "bra" & year == 2002
 	replace series = 2 if lower(`country_decode') == "bra" & year == 2003
@@ -360,14 +401,16 @@ if ("`series_breaks'" != "")  {
 	replace series = 2 if lower(`country_decode') == "bra" & year == 2015
 	replace series = 1 if lower(`country_decode') == "bra" & year == 2016
 	replace series = 1 if lower(`country_decode') == "bra" & year == 2017
-	replace series = 1 if lower(`country_decode') == "chl" & year == 2000
-	replace series = 1 if lower(`country_decode') == "chl" & year == 2003
+	replace series = 1 if lower(`country_decode') == "bra" & year == 2018
+	replace series = 2 if lower(`country_decode') == "chl" & year == 2000
+	replace series = 2 if lower(`country_decode') == "chl" & year == 2003
 	replace series = 1 if lower(`country_decode') == "chl" & year == 2006
 	replace series = 1 if lower(`country_decode') == "chl" & year == 2009
 	replace series = 1 if lower(`country_decode') == "chl" & year == 2011
 	replace series = 1 if lower(`country_decode') == "chl" & year == 2013
 	replace series = 1 if lower(`country_decode') == "chl" & year == 2015
 	replace series = 1 if lower(`country_decode') == "chl" & year == 2017
+	replace series = 1 if lower(`country_decode') == "chl" & year == 2018
 	replace series = 2 if lower(`country_decode') == "col" & year == 2001
 	replace series = 2 if lower(`country_decode') == "col" & year == 2002
 	replace series = 2 if lower(`country_decode') == "col" & year == 2003
@@ -383,6 +426,7 @@ if ("`series_breaks'" != "")  {
 	replace series = 1 if lower(`country_decode') == "col" & year == 2015
 	replace series = 1 if lower(`country_decode') == "col" & year == 2016
 	replace series = 1 if lower(`country_decode') == "col" & year == 2017
+	replace series = 1 if lower(`country_decode') == "col" & year == 2018
 	replace series = 2 if lower(`country_decode') == "cri" & year == 1989
 	replace series = 2 if lower(`country_decode') == "cri" & year == 1990
 	replace series = 2 if lower(`country_decode') == "cri" & year == 1991
@@ -412,6 +456,7 @@ if ("`series_breaks'" != "")  {
 	replace series = 1 if lower(`country_decode') == "cri" & year == 2015
 	replace series = 1 if lower(`country_decode') == "cri" & year == 2016
 	replace series = 1 if lower(`country_decode') == "cri" & year == 2017
+	replace series = 1 if lower(`country_decode') == "cri" & year == 2018
 	replace series = 3 if lower(`country_decode') == "dom" & year == 2000
 	replace series = 2 if lower(`country_decode') == "dom" & year == 2001
 	replace series = 2 if lower(`country_decode') == "dom" & year == 2002
@@ -429,10 +474,10 @@ if ("`series_breaks'" != "")  {
 	replace series = 1 if lower(`country_decode') == "dom" & year == 2014
 	replace series = 1 if lower(`country_decode') == "dom" & year == 2015
 	replace series = 1 if lower(`country_decode') == "dom" & year == 2016
-	replace series = 1 if lower(`country_decode') == "ecu" & year == 2003
-	replace series = 1 if lower(`country_decode') == "ecu" & year == 2004
-	replace series = 1 if lower(`country_decode') == "ecu" & year == 2005
-	replace series = 1 if lower(`country_decode') == "ecu" & year == 2006
+	replace series = 2 if lower(`country_decode') == "ecu" & year == 2003
+	replace series = 2 if lower(`country_decode') == "ecu" & year == 2004
+	replace series = 2 if lower(`country_decode') == "ecu" & year == 2005
+	replace series = 2 if lower(`country_decode') == "ecu" & year == 2006
 	replace series = 1 if lower(`country_decode') == "ecu" & year == 2007
 	replace series = 1 if lower(`country_decode') == "ecu" & year == 2008
 	replace series = 1 if lower(`country_decode') == "ecu" & year == 2009
@@ -444,6 +489,7 @@ if ("`series_breaks'" != "")  {
 	replace series = 1 if lower(`country_decode') == "ecu" & year == 2015
 	replace series = 1 if lower(`country_decode') == "ecu" & year == 2016
 	replace series = 1 if lower(`country_decode') == "ecu" & year == 2017
+	replace series = 1 if lower(`country_decode') == "ecu" & year == 2018
 	replace series = 1 if lower(`country_decode') == "gtm" & year == 2000
 	replace series = 5 if lower(`country_decode') == "gtm" & year == 2002
 	replace series = 4 if lower(`country_decode') == "gtm" & year == 2003
@@ -468,6 +514,7 @@ if ("`series_breaks'" != "")  {
 	replace series = 1 if lower(`country_decode') == "hnd" & year == 2015
 	replace series = 1 if lower(`country_decode') == "hnd" & year == 2016
 	replace series = 1 if lower(`country_decode') == "hnd" & year == 2017
+	replace series = 1 if lower(`country_decode') == "hnd" & year == 2018
 	replace series = 1 if lower(`country_decode') == "hti" & year == 2012
 	replace series = 1 if lower(`country_decode') == "lac" & year == 1995
 	replace series = 1 if lower(`country_decode') == "lac" & year == 1996
@@ -492,6 +539,8 @@ if ("`series_breaks'" != "")  {
 	replace series = 1 if lower(`country_decode') == "lac" & year == 2015
 	replace series = 1 if lower(`country_decode') == "lac" & year == 2016
 	replace series = 1 if lower(`country_decode') == "lac" & year == 2017
+	replace series = 1 if lower(`country_decode') == "lac" & year == 2018
+	replace series = 1 if lower(`country_decode') == "lca" & year == 2016
 	replace series = 3 if lower(`country_decode') == "mex" & year == 1989
 	replace series = 3 if lower(`country_decode') == "mex" & year == 1992
 	replace series = 3 if lower(`country_decode') == "mex" & year == 1994
@@ -535,6 +584,7 @@ if ("`series_breaks'" != "")  {
 	replace series = 1 if lower(`country_decode') == "pan" & year == 2015
 	replace series = 1 if lower(`country_decode') == "pan" & year == 2016
 	replace series = 1 if lower(`country_decode') == "pan" & year == 2017
+	replace series = 1 if lower(`country_decode') == "pan" & year == 2018
 	replace series = 2 if lower(`country_decode') == "per" & year == 1997
 	replace series = 2 if lower(`country_decode') == "per" & year == 1998
 	replace series = 2 if lower(`country_decode') == "per" & year == 1999
@@ -556,6 +606,7 @@ if ("`series_breaks'" != "")  {
 	replace series = 1 if lower(`country_decode') == "per" & year == 2015
 	replace series = 1 if lower(`country_decode') == "per" & year == 2016
 	replace series = 1 if lower(`country_decode') == "per" & year == 2017
+	replace series = 1 if lower(`country_decode') == "per" & year == 2018
 	replace series = 4 if lower(`country_decode') == "pry" & year == 1997
 	replace series = 3 if lower(`country_decode') == "pry" & year == 1999
 	replace series = 2 if lower(`country_decode') == "pry" & year == 2001
@@ -575,10 +626,11 @@ if ("`series_breaks'" != "")  {
 	replace series = 1 if lower(`country_decode') == "pry" & year == 2015
 	replace series = 1 if lower(`country_decode') == "pry" & year == 2016
 	replace series = 1 if lower(`country_decode') == "pry" & year == 2017
-	replace series = 2 if lower(`country_decode') == "slv" & year == 2000
-	replace series = 2 if lower(`country_decode') == "slv" & year == 2001
-	replace series = 2 if lower(`country_decode') == "slv" & year == 2002
-	replace series = 2 if lower(`country_decode') == "slv" & year == 2003
+	replace series = 1 if lower(`country_decode') == "pry" & year == 2018
+	replace series = 1 if lower(`country_decode') == "slv" & year == 2000
+	replace series = 1 if lower(`country_decode') == "slv" & year == 2001
+	replace series = 1 if lower(`country_decode') == "slv" & year == 2002
+	replace series = 1 if lower(`country_decode') == "slv" & year == 2003
 	replace series = 1 if lower(`country_decode') == "slv" & year == 2004
 	replace series = 1 if lower(`country_decode') == "slv" & year == 2005
 	replace series = 1 if lower(`country_decode') == "slv" & year == 2006
@@ -593,6 +645,7 @@ if ("`series_breaks'" != "")  {
 	replace series = 1 if lower(`country_decode') == "slv" & year == 2015
 	replace series = 1 if lower(`country_decode') == "slv" & year == 2016
 	replace series = 1 if lower(`country_decode') == "slv" & year == 2017
+	replace series = 1 if lower(`country_decode') == "slv" & year == 2018
 	replace series = 2 if lower(`country_decode') == "ury" & year == 1992
 	replace series = 2 if lower(`country_decode') == "ury" & year == 1995
 	replace series = 2 if lower(`country_decode') == "ury" & year == 1996
@@ -616,7 +669,12 @@ if ("`series_breaks'" != "")  {
 	replace series = 1 if lower(`country_decode') == "ury" & year == 2015
 	replace series = 1 if lower(`country_decode') == "ury" & year == 2016
 	replace series = 1 if lower(`country_decode') == "ury" & year == 2017
+	replace series = 1 if lower(`country_decode') == "ury" & year == 2018
 
+
+
+
+	
 }
 
 *--------------------3.1:

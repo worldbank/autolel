@@ -51,7 +51,7 @@ foreach pl of local pls {
 		
 		autolel_countrylist `country'		
 		local countryiso3 = `r(countryiso3n)'
-		noi di in white "autolel_reg line 51: year `year' - country `country' countryiso3 `countryiso3' ERASE"	
+		
 		* For each subregion
 		sum poor`pl' [w=pondera]  if (ipcf_ppp11 != .) & pais == "`country'"
 		local n_poor = `r(sum)'

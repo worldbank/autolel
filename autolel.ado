@@ -30,6 +30,7 @@ VERMast(passthru)					/// Datalib master version
 VERAlt(passthru)					/// Datalib alternative version
 SURVEY(passthru)					/// Datalib survey
 REPO(passthru)       	       		/// Name of repository repo(use `reponame')
+PERIOD(passthru)					/// Period
 REPOPath(string)					/// Repository Path
 MODules(passthru)                   ///
 circa(numlist)                      /// Input circa periods
@@ -103,7 +104,7 @@ quietly {
 	if (`r(match)' != 1) { 
 		noi disp in red "Calculation must be specified from the predefined list here:" _n ///
 		"`: subinstr local calclist " " " , ", all '"
-		error
+		*  error
 	}	
 	
 
@@ -766,6 +767,7 @@ syntax, Base(string) Mlist(string) [DELIMiter(string)]
 tempname match
 mata: st_numscalar("`match'", _matchlist("`base'", "`mlist'"))
 
+
 return local match = `match'
 end
 
@@ -785,7 +787,7 @@ string scalar List) {
 
 end 
 
-
+* matchlist, b("`calculation'") m("`calclist'")
 
 exit
 /* End of do-file */

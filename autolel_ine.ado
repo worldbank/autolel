@@ -57,23 +57,34 @@ quietly {
 			count `condition'
 			if r(N) == 0 continue		
 			
-			qui ineqdec0 ipcf_ppp11 [ w=pondera] `condition'
-			mat `_main_mat_inequality' = nullmat(`_main_mat_inequality') /*
-			*/  \ (`region', `zone', `year', `r(gini)'   , 0 )  /*
-			*/  \ (`region', `zone', `year', `r(p90p10)' , 1 )   /*
-			*/  \ (`region', `zone', `year', `r(p75p25)' , 2 )
+			cap qui ineqdec0 ipcf_ppp11 [ w=pondera] `condition'
+			if _rc {
+				noi di "Issue with autolel_ine.ado line 60 ineqdeco0 command- check whether ipcf_ppp11 has observations"
+				error
+			}
+			if !_rc {
+				mat `_main_mat_inequality' = nullmat(`_main_mat_inequality') /*
+				*/  \ (`region', `zone', `year', `r(gini)'   , 0 )  /*
+				*/  \ (`region', `zone', `year', `r(p90p10)' , 1 )   /*
+				*/  \ (`region', `zone', `year', `r(p75p25)' , 2 )
+			} // end ineqdeco0 works
 			
-			qui ineqdeco ipcf_ppp11 [ w=pondera] `condition'
-			mat `_main_mat_inequality' = nullmat(`_main_mat_inequality') /*
-			*/  \ (`region', `zone', `year', `r(gem1)'   ,  3 )  	/*
-			*/  \ (`region', `zone', `year', `r(ge0)'	   ,  4 ) 	/*
-			*/  \ (`region', `zone', `year', `r(ge1)'	   ,  5 ) 	/*
-			*/  \ (`region', `zone', `year', `r(ge2)'	   ,  6 ) 	/*
-			*/  \ (`region', `zone', `year', `r(ahalf)'  ,  7 ) 	/*
-			*/  \ (`region', `zone', `year', `r(a1)'		 ,  8 ) 	/*
-			*/  \ (`region', `zone', `year', `r(a2)'		 ,  9 ) 	/*
-			*/  \ (`region', `zone', `year', `r(gini)'	 , 10 ) 
-			
+			cap qui ineqdeco ipcf_ppp11 [ w=pondera] `condition'
+			if _rc {
+				noi di "Issue with autolel_ine.ado line 60 ineqdeco0 command- check whether ipcf_ppp11 has observations"
+				error
+			}
+			if !_rc {
+				mat `_main_mat_inequality' = nullmat(`_main_mat_inequality') /*
+				*/  \ (`region', `zone', `year', `r(gem1)'   ,  3 )  	/*
+				*/  \ (`region', `zone', `year', `r(ge0)'	   ,  4 ) 	/*
+				*/  \ (`region', `zone', `year', `r(ge1)'	   ,  5 ) 	/*
+				*/  \ (`region', `zone', `year', `r(ge2)'	   ,  6 ) 	/*
+				*/  \ (`region', `zone', `year', `r(ahalf)'  ,  7 ) 	/*
+				*/  \ (`region', `zone', `year', `r(a1)'		 ,  8 ) 	/*
+				*/  \ (`region', `zone', `year', `r(a2)'		 ,  9 ) 	/*
+				*/  \ (`region', `zone', `year', `r(gini)'	 , 10 ) 
+			} // end ineqdeco0 works
 		} // end of zones loop
 	} // end of regions loop
 	
