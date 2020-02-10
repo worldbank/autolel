@@ -19,7 +19,8 @@ version 14.0
 syntax [anything(name=anything)],  [ ///
 circaman countries lac years circadef   ///
 twocross globals series_breaks path(string) paths subregion ///
-country(string) module(string) export filter comp_gic comp_lip reg_represent ///
+country(string) module(string) export filter comp_gic comp_lip reg_represent gmd sedlac /// (gmd sedlac for reg_represent - region representativity
+country(string) module(string) export filter comp_gic comp_lip reg_represent gmd sedlac /// (gmd sedlac for reg_represent - region representativity
 ]
 
 /*====================================================================
@@ -35,7 +36,7 @@ if ("`module'" == "eho" & "`export'" == "export") exit
 
 
 
-local lastyear = 2017 // change when new surveys are added
+local lastyear = 2018 // change when new surveys are added
 
 *--------------------1.1: COUNTRIES
 
@@ -89,16 +90,18 @@ if ("`subregion'" != "") {
 
 
 
-* --------------------1.: Globals and Paths
+* --------------------1.5: Globals and Paths
 
 * list of calculations
 if ("`globals'" != "") {
 	* Calculations lists
-	global lel_cedlasgen   "dem dur edu hou inc ine pov bts emp"  // cedlas calculations
-	global lel_lelgen      "pov ine inq b40 dis gic oph drd bde shp gis eho lab lip reg nin" // LEL calculations (add new subprograms
+	global lel_cedlasgen   "dem dur edu hou inc ine pov bts emp"  // cedlas calculations (not used)
+	global lel_lelgen      "pov ine inq b40 dis gic oph drd bde shp gis eho lab lip reg nin hoi hos hod" // All LEL calculations (add new subprograms)
 	global lel_decomp		"drd bde" // probably not necessary 
-	global lel_crossseries "pov ine inq b40 dis gic lab lip reg nin" // cross-section series (add new subprograms)
-	global lel_2crosssect  "drd bde shp gis"         // two cross-sections (add new subprograms)
+	global lel_crossseries "pov ine inq b40 dis gic lab lip reg nin hoi hos " // cross-section series (add new subprograms)
+	global lel_seriesbreaks "pov ine inq b40 dis" // calcs that need series breaks (trends)
+	global lel_2crosssect  "drd bde shp gis hod"         // two cross-sections (add new subprograms)
+	
 }
 
 * default paths (this replace previous ado-file autolel_paths)
@@ -135,7 +138,8 @@ if ("`circaman'" == "circaman") {
 		local w : list posof "`country'" in iso3list
 		local code : word `w' of `codeslist'
 		* For two cross sections: Comparability between periods
-		if inlist("`module'","shp","drd","bde","gis") {
+		if ("`twocross'" != "" & "`country'" != "") {
+		* if inlist("`module'","shp","drd","bde","gis") {
 			local circas "2007 2012 2012 2017 2007 2017"	
 			if      ("`code'" == "ARG") local years  "2007 2012 2012 2017 2007 2017" // Same
 			else if ("`code'" == "BRA") local years  "2007 2012 2012 2015 2007 2015" // Dif 
@@ -157,7 +161,7 @@ if ("`circaman'" == "circaman") {
 			else                        local years  "`circas'" 
 			di in white "TEMP: autolel defaults 158: code `code' years `years'"
 		}
-		* For external home page - Cross-section circas
+		* Cross-section circas
 		else {
 			local circas "2007 2012 2017" 
 			if      ("`code'" == "ARG") local years "2007 2012 2017"
@@ -250,18 +254,20 @@ if ("`filter'"!="") {
 			local subrs "999 1000 1001 1002"
 			foreach s of local subrs {
 				drop if country == `s' & inlist(zone,0,1)
-			}
+			} 
 		}
 		* Circas (for example gis)
 		* cap confirm var circa1
 		* if !_rc {
 			* drop if circa1 == 9999
 		* }
+	} // end zones
 	}
-}
+} // end filter
 
 /*====================================================================
-4: Comparability GIC: 
+4: Other filters
+Comparability GIC: 
 * Keep last available survey:
 Decision NG and LM 04.25.2019: 
 1. Leave latest available survey for all except:
@@ -295,41 +301,78 @@ if "`comp_lip'"!= "" {
 /*====================================================================
 5: Subregional - regional representativity of surveys (For HOI and others)
 ====================================================================*/
-* Using GMD standard regions
+* Using GMD standard regions and sedlac
 if ("`reg_represent'" != "") {
+	
+	if "`gmd'"!= "" {
+		local arg_reg "subnatid1" // "region_est2"
+		local bol_reg "subnatid1" // "region_est1"
+		local bra_reg "subnatid2" // "region_est2"
+		local chl_reg "subnatid1" // "region_original" // PRO 2
+		local col_reg "subnatid2"  // original not possible
+		local cri_reg "subnatid1" // "region_est1"
+		local dom_reg "subnatid1" // "region_est1"
+		local ecu_reg "subnatid2" // "region_est1"
+		local slv_reg "subnatid2" // "region_est2"
+		local gtm_reg "subnatid2" // "region_est3" 
+		local hti_reg "subnatid2" // "region_est1"
+		local hnd_reg "subnatid1" // "domi"
+		local mex_reg "subnatid2" // original not possbile
+		local nic_reg "subnatid1" // "region_est1"
+		local pan_reg "subnatid2" // "region_est2"
+		local per_reg "subnatid2" // "region_est1"
+		local pry_reg "subnatid1" // "region_est1" - *See note below
+		local ury_reg "subnatid1" // "region_est1"
+	}
+	if "`sedlac'" != "" {
+		local arg_reg "region_est2"
+		local bol_reg "region_est1"
+		local bra_reg "region_est2"
+		local chl_reg "region_original" // PRO 2
+		local col_reg "region_est2"
+		local cri_reg "region_est1"
+		local dom_reg "region_est1"
+		local ecu_reg "region_est1"
+		local slv_reg "region_est2"
+		local gtm_reg "region_est3"
+		local hti_reg "region_est1"
+		local hnd_reg "domi"
+		local mex_reg "region_est2"
+		local nic_reg "region_est1"
+		local pan_reg "region_est2"
+		local pry_reg "region_est1"
+		local per_reg "region_est1"
+		local ury_reg "region_est1"
+	}
+	
 
-	local arg_reg "region_est2"
-	local bol_reg "region_est1"
-	local bra_reg "region_est2"
-	local chl_reg "region_original" // PRO 2
-	* COL NA
-	local cri_reg "region_est1"
-	local dom_reg "region_est1"
-	local ecu_reg "region_est1"
-	local slv_reg "region_est2"
-	local gtm_reg "region_est3"
-	local hti_reg "region_est1"
-	local hnd_reg "domi"
-	* MEX NA
-	local nic_reg "region_est1"
-	local pan_reg "region_est2"
-	local pry_reg "region_est1"
-	local per_reg "region_est1"
-	local ury_reg "region_est1"
-	
-	cap gen states = ""
-	
 	levelsof pais, local(paises)
 	foreach pais of local paises {
-		cap confirm string var ``pais'_reg'
-		if _rc {
-			tempvar aux
-			decode ``pais'_reg', gen(`aux')
-			replace states = `aux'
+		if "`sedlac'" != "" {
+			cap confirm string var ``pais'_reg'
+			if _rc { // if string
+				tempvar aux
+				decode ``pais'_reg', gen(`aux')
+				gen states = `aux'
+				
+			}
+			else gen states = ``pais'_reg'
 		}
-		else replace states = ``pais'_reg'
+		
+		if "`gmd'" != "" {
+			gen states = real(regexs(1)) if regexm(``pais'_reg',"([0-9]+)")
+			
+			*Encode states - var states with state labels
+			levelsof ``pais'_reg', local(states)
+			foreach state of local states {
+				levelsof states if ``pais'_reg' == "`state'", local(x)
+				label define state_lab `x' "`state'", modify
+				label values states state_lab
+			}
+		}
 	}
-} // end reg_represent
+} // end region representativity	
+
 
 
 
@@ -343,8 +386,6 @@ Sheet(Labels series autolel) in long format
 
 */
 
-
-* if (("`series_breaks'" != "") & inlist("`module'","pov","ine")) { // modified 04.25 - erase
 
 if ("`series_breaks'" != "")  {
 
@@ -690,7 +731,7 @@ exit
 ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><
 
 Notes:
-1.
+1. Subnational representativeness: PRY although excel says rep at subnatid2, region 8 has 67 obs for 2014, so we use subnatid1
 2.
 3.
 

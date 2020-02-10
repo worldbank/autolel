@@ -44,7 +44,7 @@ tempfile survey hoi hoi_share hoi_sub shapley decomp dta_append
 tempname svy h c h_s h_sub s d 
 
 postfile `svy' str10 veralt str10 vermast str10 project str30 survey str30 year str30 acronym str30 country str30 type str30 nature using `survey', replace // Survey Module
-postfile `h' str40 cnt str25 country str4 (circa year) str48 indicator obs_indicator double (prob dindex hoi sehoi)  using `hoi', replace	// HOI
+postfile `h' str40 cnt str25 country str4 (circa year) str48 indicator - obs_indicator double (prob dindex hoi sehoi)  using `hoi', replace	// HOI
 postfile `h_sub' str40 state str25 country str4 (circa year) str48 indicator obs_indicator double (prob dindex hoi sehoi)  using `hoi_sub', replace	// Sub-national HOI
 
 postfile `d' str10 cnt str25 country str12 period str48 indicator obs_indicator str20 estad value using `decomp', replace	// Decomposition of the change of the HOI between 2 years - Circa 2000 and 2014
@@ -106,7 +106,7 @@ foreach year of local years {
     replace ${sewage} = 1 if ${sewage} > 1 & ${sewage} <.
 	drop aux
 
-	* ${internet}
+	* Internet
 	ren ${internet} aux
     egen ${internet} = total(aux), by(id) miss
     replace ${internet} = 1 if ${internet} > 1 & ${internet} < .
@@ -119,14 +119,10 @@ foreach year of local years {
 	drop aux
 
 	* Progress in School
-	
-	if ("`country'" == "bra") | ("`country'" == "gtm") | ("`country'" == "nic") {
-		local aux = 1
-	}
-	else {
-		local aux = 0
-	}
-	
+	* Some countries have different primary school systems: BRA (76), GTM (320), NIC (558)
+	if inlist(`country', 76, 320, 558)	local aux = 1
+	else local aux = 0
+
 	* Finished primary school
 	forvalues i = 1(1)12 {
 		gen edu`i' = 0
@@ -135,12 +131,12 @@ foreach year of local years {
 		replace edu`i ' = . if age < 6+`i'+`aux' | age > 10+`i'+`aux'
 	}
 	
-	* primary complete
+	* primary complete // not used in the rest of do file - replaced by pric
 	gen pric2 = 0	
 	replace pric2 = 1 if ${aedu} >=6 & ${aedu} !=.
 
 	* Secondary ${attendance}
-	gen secondary = ${${attendance}} 
+	gen secondary = ${attendance}
 	replace secondary=. if age < 13 | age > 16
 
 
@@ -246,7 +242,7 @@ keep if age <19 & age!=.
 		qui:tab `dep'
 		if `r(r)' == 2 {	// loop if opportunity is defined
 			
-			if "`dep'" == "${water}" local label "${water}"
+			if "`dep'" == "${water}" local label "Water"
 			if "`dep'" == "${elect}" local label "Electricity"
 			if "`dep'" == "${sewage}1" local label "Sanitation"
 			if "`dep'" == "${internet}" local label "Internet"
@@ -343,7 +339,7 @@ keep if age <19 & age!=.
 						qui:tab `dep' if age>=`min_age' & age<=`max_age' & state == "`state'"
 						local row = `r(r)'
 
-							if "`dep'" == "${water}" local label "${water}"
+							if "`dep'" == "${water}" local label "Water"
 							if "`dep'" == "${elect}" local label "Electricity"
 							if "`dep'" == "${sewage}1" local label "Sanitation"
 							if "`dep'" == "${internet}" local label "Internet"
@@ -483,7 +479,7 @@ keep if age <19 & age!=.
 				
 				if `a' == 2 & `b' == 2 {	// loop if opportunity is defined
 					
-					if "`dep'" == "${water}" local label "${water}"
+					if "`dep'" == "${water}" local label "Water"
 					if "`dep'" == "${elect}" local label "Electricity"
 					if "`dep'" == "${sewage}1" local label "Sanitation"
 					if "`dep'" == "${internet}" local label "Internet"

@@ -53,6 +53,18 @@ clear  *                            /// Deletes current dataset
 erase								/// Erases previous output
 saverepo							/// With erase option - saves repo with the date
 TROubleshoot						/// Displays key parts of the code when program is not running
+gmd									/// Options for HOI dashboard
+sedlac                              /// Options for HOI dashboard
+water(passthru)                       /// Options for HOI dashboard
+elect(passthru)                       /// Options for HOI dashboard
+SEWage(passthru)                      /// Options for HOI dashboard
+INTERnet(passthru)                    /// Options for HOI dashboard
+CELular(passthru)                     /// Options for HOI dashboard
+pric(passthru)                        /// Options for HOI dashboard
+ATTendance(passthru)                  /// Options for HOI dashboard
+spouse(passthru)                      /// Options for HOI dashboard
+male(passthru)                        /// Options for HOI dashboard
+subregion							/// HOI option for subregion
 ]
 
 
@@ -76,6 +88,7 @@ quietly {
 	local lel_crossseries = "${lel_crossseries}"
 	local lel_nocounyears = "${lel_nocounyears}"
 	local lel_2crosssect  = "${lel_2crosssect}"
+	local lel_seriesbreaks = "${lel_seriesbreaks}"
 	
 	*===============================================================================
 	* if ("`clear'" == "") preserve
@@ -322,8 +335,10 @@ quietly {
 						local circaopt "circa(`year')" 
 					}
 					
-					
+					* Loading datalib datasets (LABLAC, GMD, SEDLAC)
+			********************************************************************		
 					* For LABLAC: Load all quarters:
+					*********************************************			
 					if strpos("`crosscals'","lip")!=0 { // LIPI-LABLAC condition
 						* if "`periods'"=="" local quarters "q01 q02 q03 q04"
 						* else local quarters = substr("`periods'",8,.)
@@ -357,16 +372,29 @@ quietly {
 						count
 						if `r(N)'== 0 continue
 					} // END LIPI - LABLAC condition
-
 					
-					* FOR SEDLAC: (non-lablac)
+				
+					* FOR SEDLAC and GMD datasets: All other dashboards
+					***************************************************************************
 					else { // NON-LIPI LABLAC condition
-						if "`troubleshoot'"!= ""  noi di in white "Line 363: cap  datalib, country(`country') `yearsopt' `circaopt' `project' `modules' `repath' `repo' `vermast' `veralt' `survey' `period' clear" 
+						* FOR GMD datasets: HOI dashboards - HOI and HOI subnational and troubleshoot
+						global troubleshoot ""
+						if inlist("`crosscals'","hoi","hos") {
+							local modules "mod(gmd pov)" // GMD
+							global troubleshoot "troubleshoot" // keep track in HOI
+						}
+						local gmd_options  "`water' `elect' `sewage' `internet' `celular' `pric' `attendance' `spouse' `male' `subregion' `gmd' `sedlac'"
+						if ("`troubleshoot'"!= "" & "`gmd_options'"!="" {
+							noi di in white "Line 382: local gmd_options are -`water' `elect' `sewage' `internet' `celular' `pric' `attendance' `spouse' `male' `subregion' `gmd' `sedlac'"
+						}
+						
+
+						if "`troubleshoot'"!= ""  noi di in white "Line 385: cap  datalib, country(`country') `yearsopt' `circaopt' `project' `modules' `repath' `repo' `vermast' `veralt' `survey' `period'  clear" 
+
 						
 						cap  datalib, country(`country') `yearsopt' `circaopt' ///
-						`project' `modules' `repath' `repo' `vermast' `veralt' `survey' `period' clear  
-					
-						* noi di in white "cap  datalib, country(`country') `yearsopt' `circaopt' `project' `modules' `repath' `repo' `vermast' `veralt' clear"
+						`project' `modules' `repath' `repo' `vermast' `veralt' `survey' `period'  clear  
+
 						if (_rc) {
 							noi disp as err "W: " as text "`country' - `year' not loaded"
 							continue
@@ -374,7 +402,7 @@ quietly {
 						else {
 							noi disp in white "`country' - `year' loaded"
 						}
-					} // END NON - LIPI LABLAC condition
+					} // END SEDLAC CONDITION
 				
 ***** Calc loop ***********************************************************
 					foreach calc of local crosscals {
@@ -385,39 +413,44 @@ quietly {
 							continue
 						}
 						
-						autolel_`calc', country(`country') year(`year') iso(`countryiso3') `byarea' // calculations
+						
+						autolel_`calc', country(`country') year(`year') iso(`countryiso3') `gmd_options' `byarea' // calculations
 /*========================================================================
 	3.3. CROSS SECTION series - Save results
 *========================================================================*/	
-		
-						*Convert matrices into tempfiles
-						if ("`calc'" == "pov") local colnames "country zone year pline rate obs indicator"
-						if ("`calc'" == "ine") local colnames "country zone year rate indicator"
-						if ("`calc'" == "inq") local colnames "country year quintiles inc_source shq_tot shi_by_q shq_by_i value"
-						if ("`calc'" == "b40") local colnames "country year group rate indicator totals"
-						if ("`calc'" == "gic") local colnames "country year percentiles mean total"
-						if ("`calc'" == "dis") local colnames "country year percentiles p_share cum_dis group"
-						if ("`calc'" == "eho") local colnames "country year1 year2 rate date upi circa1 circa2 indicator indicator_sp countrycode countryname countryname_sp topic year area_en area_sp circa series obs pline pline_sp"
-						if ("`calc'" == "lab") local colnames "country year group lab_status rate obs pop_rate"
-						if ("`calc'" == "lip") local colnames "country year quarter indicator line rate consistency inconsistent"
-						if ("`calc'" == "reg") local colnames "type indicator country year pline n_poor share"
-						if ("`calc'" == "nin") local colnames "country year status ages gender share obs"
+						**********************************************************	
+						if !inlist("`calc'","hoi","hos","hod") { // HOI output- post-file since subnational labels extracted directly from dataset
+							*Convert matrices into tempfiles
+							if ("`calc'" == "pov") local colnames "country zone year pline rate obs indicator"
+							if ("`calc'" == "ine") local colnames "country zone year rate indicator"
+							if ("`calc'" == "inq") local colnames "country year quintiles inc_source shq_tot shi_by_q shq_by_i value"
+							if ("`calc'" == "b40") local colnames "country year group rate indicator totals"
+							if ("`calc'" == "gic") local colnames "country year percentiles mean total"
+							if ("`calc'" == "dis") local colnames "country year percentiles p_share cum_dis group"
+							if ("`calc'" == "eho") local colnames "country year1 year2 rate date upi circa1 circa2 indicator indicator_sp countrycode countryname countryname_sp topic year area_en area_sp circa series obs pline pline_sp"
+							if ("`calc'" == "lab") local colnames "country year group lab_status rate obs pop_rate"
+							if ("`calc'" == "lip") local colnames "country year quarter indicator line rate consistency inconsistent"
+							if ("`calc'" == "reg") local colnames "type indicator country year pline n_poor share"
+							if ("`calc'" == "nin") local colnames "country year status ages gender share obs"
+							
+							*Append tempfile for each country/year instead of whole matrix
+							drop _all
+							cap mat drop `_main_mat_`calc'' // new matrix for each country-year
+							tempname _main_mat_`calc'
+							mat `_main_mat_`calc'' = nullmat(`_main_mat_`calc'') /// store results
+							\ r(_main_mat_`calc') // return lists martix _main_mat_`calc' saved in sub-programs
+							* noi mat list `_main_mat_`calc'' // temp erase
+							
+							cap mat colnames `_main_mat_`calc'' =  `colnames' 
+							if _rc {
+								noi di in red "`_main_mat_`calc'' - is an empty matrix"
+								exit
+							}
+							svmat double `_main_mat_`calc'', n(col)
+						} // end non-hoi matrices output calcuations
+						**************************************************
 						
-						*Append tempfile for each country/year instead of whole matrix
-						drop _all
-						cap mat drop `_main_mat_`calc'' // new matrix for each country-year
-						tempname _main_mat_`calc'
-						mat `_main_mat_`calc'' = nullmat(`_main_mat_`calc'') /// store results
-						\ r(_main_mat_`calc') // return lists martix _main_mat_`calc' saved in sub-programs
-						* noi mat list `_main_mat_`calc'' // temp erase
-						
-						cap mat colnames `_main_mat_`calc'' =  `colnames' 
-						if _rc {
-							noi di in red "`_main_mat_`calc'' - is an empty matrix"
-							exit
-						}
-						svmat double `_main_mat_`calc'', n(col)
-						
+
 						cap confirm file `tempfile_`calc'' // for first loop it makes new matrix, then appends (countries and years)
 						if _rc { // if file doesn't exist
 							tempfile tempfile_`calc'
@@ -593,8 +626,12 @@ quietly {
 					foreach calc of local twocrosscals { // NEW NATALIA
 						use `twoperiods', clear
 						
+						* Income sources for SHAPLEY
+						local inc_opt ""
+						if "`incsources'"!="" local inc_opt `"bdevars(`incsources')"'
+						
 						* Run autolel two period subprograms
-						autolel_`calc', country(`country') iso(`countryiso3') year1(`fp') year2(`sp') `dtype' `pls'
+						autolel_`calc', country(`country') iso(`countryiso3') year1(`fp') year2(`sp') `dtype' `pls' `inc_opt'
 						
 	
 						*=====================================================================
@@ -614,10 +651,8 @@ quietly {
 						mat `_main_mat_`calc'' = nullmat(`_main_mat_`calc'') /// store results
 						\ r(_main_mat_`calc')
 						
-						
-						
+
 						*  noi mat list `_main_mat_`calc'' // temp
-						
 						
 						mat colnames `_main_mat_`calc'' = `colnames' 
 						svmat double `_main_mat_`calc'', n(col)
@@ -638,9 +673,6 @@ quietly {
 		}  // end of ("`twocrosscals'"  != "")
 		
 		
-		
-		
-	
 		/*============================================================================
 		* all countries and years at the same time
 		For this calculations there is no need to specify countries and years
@@ -696,7 +728,7 @@ quietly {
 			if ("`save'" == "save" | "`path'" != "") autolel_export, module(`ind') path(`path') `replace' `cedlas' // Natalia: missing export for cedlas
 		}
 	} // end cedlas (sedlac stats)
-	
+********************************************************************
 	else { // non cedlas calculations
 	
 		foreach calc of local calculation {
@@ -726,14 +758,18 @@ quietly {
 				
 				autolel_defaults, circaman 	module("`calc'") export
 				
-				
-				
+				********************************************
 				*Series breaks
-				if inlist("`calc'","pov", "ine", "inq", "b40", "dis") {
+				local seriesbreaks: list calculation & lel_seriesbreaks
+
+				if ("`seriesbreaks'"  != "") {
 					autolel_defaults, series_breaks module("`calc'")
 				}
+				**********************************************
+	
+	
 				
-				
+				* Filters specific countries, years, regions not to include globally
 				autolel_defaults, filter
 				
 				

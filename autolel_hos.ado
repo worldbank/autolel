@@ -8,7 +8,7 @@ Do-File Version:        01
 
 
 
-program define autolel_hos, rclass
+program define autolel_hod, rclass
 syntax, [ country(string) iso(numlist) year(numlist) water(string) elect(string) SEWage(string) INTERnet(string) CELular(string) pric(string) ATTendance(string) spouse(string) male(string) gmd sedlac] // Variables for HOI can be chosen by user, gmd variable names
 
 

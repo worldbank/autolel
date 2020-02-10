@@ -8,19 +8,47 @@ Do-File Version:        01
 
 
 
-program define autolel_hos, rclass
-syntax, [ country(string) iso(numlist) year(numlist) water(string) elect(string) SEWage(string) INTERnet(string) CELular(string) pric(string) ATTendance(string) spouse(string) male(string) gmd sedlac] // Variables for HOI can be chosen by user, gmd variable names
+* program define autolel_hoi, rclass
+* syntax, [ country(string) iso(numlist) year(numlist) circa(numlist) water(string) elect(string) SEWage(string) INTERnet(string) CELular(string) pric(string) ATTendance(string) spouse(string) male(string) gmd sedlac subregion troubleshoot] // Variables for HOI can be chosen by user, gmd variable names
 
-
+* Hoi subprograms: hoi hos hod
 /*===============================================================================================
                      1. Setting default variables
 ===============================================================================================*/
 
-/* Natalia: 1/09/2020 - For now use sedlac database, not gmd:
-GMD is needed for subnational since we have accurate subnational id variables, but it doesn't have other necessary vars: conjugue, internet */
+* Natalia: 1/09/2020 - For now use gmd: with no internet
 
-* Default uses sedlac variables
-if "`gmd'" == "" & "`sedlac'" == "" local sedlac "sedlac" 
+
+* Creation of states
+* autolel_defaults, reg_represent gmd
+
+* TEMP:
+local iso "600" // pry
+local year 2017
+local circa 2017
+local gmd gmd
+
+* Troubleshoot option - either display hoi calc or quietly execute
+if "${troubleshoot}" != "" {
+	* local qui_ "qui {"
+	* local endqui_ "} // end qui"
+	local display_ "noi di in red"
+	local noi_hoi "noi  hoi"
+}
+else {
+	* local qui_ "*"
+	* local endqui_ "*"
+	local display_ "qui di"
+	local noi_hoi "qui hoi"
+}
+
+
+
+
+qui {
+
+* Default uses gmd variables
+if "`gmd'" == "" & "`sedlac'" == "" local gmd gmd
 
 * Turn locals to globals for easier programming
 global water "`water'" 
@@ -39,12 +67,12 @@ if "`gmd'" != "" {
 	if "${water}" == "" 	global water "water"
 	if "${elect}" == "" 	global elect "electricity"
 	if "${sewage}" == "" 	global sewage "cloacas"
-	* if "${internet}" == "" global internet 
+	if "${internet}" == "" global internet " " //  missing in GMD pov 
 	if "${celular}" == "" 	global celular "cellphone"
 	if "${pric}" == "" 		global pric "primarycomp"
-	if "${attendance}" == "" global attendance == "school"
-	if "${aedu}" == "" 		global aedu == "educy"
-	* if "${spouse}" == "" 	global spouse == "conjugue" // missing in gmd
+	if "${attendance}" == "" global attendance "school"
+	if "${aedu}" == "" 		global aedu "educy"
+	if "${spouse}" == "" 	global spouse "conyugue" // missing in gmd pov - but is created in this ado file
 }	
 
 if "`sedlac'" != "" {
@@ -53,12 +81,13 @@ if "`sedlac'" != "" {
 	if "${sewage}" == "" 	global sewage "cloacas"
 	if "${internet}" == "" global internet "internet_casa" 
 	if "${celular}" == "" 	global celular "celular"
-	* if "${pric}" == "" 		global pric "primarycomp" // doesn't exist in sedlac
-	if "${attendance}" == "" global attendance == "asiste"
-	if "${aedu}" == "" 		global aedu == "aedu"
-	if "${spouse}" == "" 	global spouse == "conjugue" 
-}	
-
+	if "${pric}" == "" 		global pric "primarycomp" // doesn't exist in sedlac, but is created in this do file
+	if "${attendance}" == "" global attendance "asiste"
+	if "${aedu}" == "" 		global aedu "aedu"
+	if "${spouse}" == "" 	global spouse "conyugue" 
+}
+	
+autolel_defaults, reg_represent `gmd' `sedlac'
 
 /*=======================================================
                  2. Generate variables for HOI
@@ -77,34 +106,25 @@ cap gen ipcf_ppp11 = ipcf*(ipc11_sedlac/ipc_sedlac)*(1/ppp11)
 
 * Opportunities variables: Services
 **********************************************
-* Water:
-rename ${water} ${water}_aux
-egen ${water} = total(${water}_aux), by(id) miss
-replace ${water} = 1 if ${water} > 1 & ${water} < .
+* New syntax - in case variable doesn't exist (like internet)
+local services "water elect sewage internet celular"
+local  aux_var aux_var
 
-* Electricity
-egen ${elect}persona = total(${elect}), by(id) miss
-ren ${elect} ${elect}hogar
-ren ${elect}persona elect
-replace ${elect} = 1 if ${elect} > 1 & ${elect} < .
-	
-* Sewage
-rename ${sewage} aux
-egen ${sewage} = total(aux), by(id) miss
-replace ${sewage} = 1 if ${sewage} > 1 & ${sewage} <.	
-drop aux
+foreach var of local services {
+if "${troubleshoot}" != "" di "${`var'} "
+cap confirm var ${`var'}
+	if !_rc {
+	if "${troubleshoot}" != "" di in white "${`var'} exists"
+		ren ${`var'} `aux_var'
+		egen ${`var'} = total(`aux_var'), by(id) miss
+		replace ${`var'} = 1 if ${`var'} > 1 & ${`var'} < .
+		drop `aux_var'
+	}
+	if _rc {
+		if "${troubleshoot}" != ""  di in red "`var' variable does not exist"
+	}
+}
 
-* Internet
-ren ${internet} aux
-egen ${internet} = total(aux), by(id) miss
-replace ${internet} = 1 if ${internet} > 1 & ${internet} < .
-drop aux
-
-* Cellular
-ren ${celular} aux
-egen ${celular} = total(aux), by(id) miss
-replace ${celular}= 1 if ${celular}> 1 & ${celular}< .
-drop aux
 	
 * Progress in school
 **************************************
@@ -119,6 +139,18 @@ forvalues i = 1(1)12 {
 	replace edu`i' = edu`i' if age >= 6+`i'+`aux' | age <= 10+`i'+`aux'
 	replace edu`i ' = . if age < 6+`i'+`aux' | age > 10+`i'+`aux'
 }
+
+/* Primary complete:
+currently doesn't exist in sedlac, and nivel not in gmd, but primarycomp is in GMD*/
+
+
+if "`sedlac'" != "" {
+		gen ${pric} = (nivel>=2 & nivel!=.)
+}
+noi di "local sedlac `sedlac'"
+* Both GMD and SEDLAC
+clonevar pric = primarycomp
+
 	
 * Secondary attendance
 gen secondary = ${attendance}
@@ -148,12 +180,13 @@ drop aux
 
 * Dummy two parents in the house
 cap confirm var ${spouse}
-if !_rc { // if ${spouse} exists (doesn't exist in gmd)
+if _rc gen ${spouse} = (relacion == 2)
+* if !_rc { // if ${spouse} exists (doesn't exist in gmd)
 	gen aux= (${spouse}==1)
 	replace aux = . if ${spouse} == .
 	egen popmom = total(aux), by(id) miss
 	drop aux
-}
+* }
 
 * Number of children - less than 17 years old
 gen cri = .
@@ -181,8 +214,9 @@ compress
 /*=======================================================
                   3. Calculate HOI
 =======================================================*/	
-
-postfile `h' str40 cnt str25 country str4 (circa year) str48 indicator obs_indicator double (prob dindex hoi sehoi)  using `hoi', replace	// HOI	
+tempfile hoi
+tempname h
+postfile `h' country  circa year str48(Opportunity var) obs_indicator double (prob dindex hoi sehoi)  using `hoi', replace	// HOI	
 
 keep if age <19 & age!=.	
 	
@@ -206,23 +240,23 @@ else global cov2 " _Iage_13 _Iage_14 _Iage_15 _Iage_16 yedu_head male male_head 
 *****************************************************************
 
 	foreach dep in `depvar1' {	// loop for opportunities group # 1
-		disp in red "Calculating for ----> `dep'"
+		noi disp in green "Calculating for ----> `dep'"
 		qui:tab `dep'
 		if `r(r)' == 2 {	// loop if opportunity is defined
 			
 			if "`dep'" == "${water}" local label "Water"
 			if "`dep'" == "${elect}" local label "Electricity"
-			if "`dep'" == "${sewage}1" local label "Sanitation"
+			if "`dep'" == "${sewage}" local label "Sanitation"
 			if "`dep'" == "${internet}" local label "Internet"
 			if "`dep'" == "${celular}" local label "Cellular"
 			
 			*** HOI - All the sample
 			
-			noi di in red "noi hoi `dep' $cov1 [fw=weight] if age>=`min_age' & age<=`max_age', estim  "
-			noi hoi `dep' $cov1 [fw=weight] if age>=`min_age' & age<=`max_age', estim
-			noi di in red ``"Estimation successful -----> Continuing with next estimation of `country' in `year' "''
+			`display_' "noi hoi `dep' $cov1 [fw=weight] if age>=`min_age' & age<=`max_age', estim  "
+			`noi_hoi' `dep' $cov1 [fw=weight] if age>=`min_age' & age<=`max_age', estim
+			`display_' ``"Estimation successful -----> Continuing with next estimation of `country' in `year' "''
 			
-			post `h' ("`country'") ("`countryname'") ("`circa'") ("`year'") ("`label'") (`e(N)') (`r(p_1)') (`r(d_1)') (`r(hoi_1)') (`r(se_oi_1)')
+			post `h' (`iso') (`circa') (`year') ("`label'") ("`dep'") (`e(N)') (`r(p_1)') (`r(d_1)') (`r(hoi_1)') (`r(se_oi_1)')
 							
 		}	// end loop if opportunity is defined
 	}	// end of loop for opportunities group # 1
@@ -230,53 +264,69 @@ else global cov2 " _Iage_13 _Iage_14 _Iage_15 _Iage_16 yedu_head male male_head 
 ****** 3.1. HOI for Group 2: School attendance
 *****************************************************************	
 	foreach dep in `depvar2' {	// loop for opportunities group # 2
-		disp in red "Calculating for ----> `dep'"
+		noi disp in green "Calculating for ----> `dep'"
 		qui:tab `dep'
 		if `r(r)' == 2 {	// loop if opportunity is defined
 			
 			*** HOI
-			noi di in red "noi hoi `dep' $cov1 [fw=weight] if age>=10 & age<=14 , estim "
-			noi  hoi `dep' $cov1 [fw=weight] if age>=10 & age<=14, estim
-			noi di in red `"Estimation successful -----> Continuing with next estimation of `country' in `year' "'
+			`display_' "noi hoi `dep' $cov1 [fw=weight] if age>=10 & age<=14 , estim "
+			`noi_hoi' `dep' $cov1 [fw=weight] if age>=10 & age<=14, estim
+			`display_' `"Estimation successful -----> Continuing with next estimation of `country' in `year' "'
 			
-			post `h' ("`country'") ("`countryname'") ("`circa'") ("`year'") ("School Enrollment") (`e(N)') (`r(p_1)') (`r(d_1)') (`r(hoi_1)') (`r(se_oi_1)')
+			post `h' (`iso') (`circa') (`year') ("School Enrollment") ("`dep'") (`e(N)') (`r(p_1)') (`r(d_1)') (`r(hoi_1)') (`r(se_oi_1)')
 		
 
 			
 		}	// end loop if opportunity is defined
 	}	// end of loop for opportunities group # 2
-	
+
+
 ****** 3.1. HOI for Group 3: Primary complete
 *****************************************************************	
 	foreach dep in `depvar3' {	// loop for opportunities group # 3
-		disp in red "Calculating for ----> `dep'"
+		noi disp in green "Calculating for ----> `dep'"
 		qui:tab `dep'
 		if `r(r)' == 2 {	// loop if opportunity is defined
 			if ("`country'" == "bra") | ("`country'" == "gtm") | ("`country'" == "nic") {
-			noi di in red "noi hoi `dep' $cov2 [fw=weight] if age>=13 & age<=17 , adjust1(_Iage_14=1 _Iage_15=0 _Iage_16=0 _Iage_17=0) estim "
-			noi  hoi `dep' $cov2 [fw=weight] if age>=13 & age<=17 , adjust1(_Iage_14=1 _Iage_15=0 _Iage_16=0 _Iage_17=0) estim
-			noi di in red `"Estimation successful -----> Continuing with next estimation of `country' in `year' "'
+			`display_' "noi hoi `dep' $cov2 [fw=weight] if age>=13 & age<=17 , adjust1(_Iage_14=1 _Iage_15=0 _Iage_16=0 _Iage_17=0) estim "
+			`noi_hoi' `dep' $cov2 [fw=weight] if age>=13 & age<=17 , adjust1(_Iage_14=1 _Iage_15=0 _Iage_16=0 _Iage_17=0) estim
+			`display_' `"Estimation successful -----> Continuing with next estimation of `country' in `year' "'
 			}
 			
 			else {
-			noi di in red "noi hoi `dep' $cov2 [fw=weight] if age>=12 & age<=16 , adjust1(_Iage_13=1 _Iage_14=0 _Iage_15=0 _Iage_16=0) estim "
-			noi  hoi `dep' $cov2 [fw=weight] if age>=12 & age<=16 , adjust1(_Iage_13=1 _Iage_14=0 _Iage_15=0 _Iage_16=0) estim
-			noi di in red `"Estimation successful -----> Continuing with next estimation of `country' in `year' "'
+			`display_' "noi hoi `dep' $cov2 [fw=weight] if age>=12 & age<=16 , adjust1(_Iage_13=1 _Iage_14=0 _Iage_15=0 _Iage_16=0) estim "
+			`noi_hoi' `dep' $cov2 [fw=weight] if age>=12 & age<=16 , adjust1(_Iage_13=1 _Iage_14=0 _Iage_15=0 _Iage_16=0) estim
+			`display_' `"Estimation successful -----> Continuing with next estimation of `country' in `year' "'
 			}
 			
-			post `h' ("`country'") ("`countryname'") ("`circa'") ("`year'") ("Finished primary School") (`e(N)') (`r(p_1)') (`r(d_1)') (`r(hoi_1)') (`r(se_oi_1)')
+			post `h' (`iso') (`circa') (`year') ("Finished primary School")  ("`dep'") (`e(N)') (`r(p_1)') (`r(d_1)') (`r(hoi_1)') (`r(se_oi_1)')
 			
 		
 					
 		}	// end loop if opportunity is defined
 	}	// end of loop for opportunities group # 2
-	
-	stop
-postclose `hoi'
-use `h' , clear
-compress
 
-	
+
+****** 4. Create output
+*****************************************************************
+postclose `h'
+use `hoi' , clear
+compress
+gen Universe = "All"
+gen Indicator = "HOI" 
+
+} // end qui 
+
+
+end
+
+exit
+
+
+
+* TEMP ERASE		
+
+stop 
 	
 	
 	
