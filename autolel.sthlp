@@ -81,70 +81,70 @@ based on circa criteria [-2,2]{p_end}
 {col 8}{hline 3}{c RT}{it:Cross-sections}{c LT}{hline}
 {col 8}   {c BLC}{hline 14}{c BRC}
 
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/Headcount.aspx":pov}}{...}
-{col 28}Poverty numbers. this is the default
+{col 8}{bf:pov}{...}
+{col 28}Poverty rates, gap and severity - this is the default
 
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/trends.aspx":ine}}{...}
-{col 28}Inequality indices e.g., Gini, theil, etc
+{col 8}{bf:ine}{...}
+{col 28}Inequality indices, Gini, Theil, Atkinson, Other entropy measures, Income ratios
 
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/quintile.aspx":inq}}{...}
+{col 8}{bf:inq}{...}
 {col 28}Decomposition of income distribution by quintile
 
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/incomedistribution.aspx":dis}}{...}
+{col 8}{bf:dis}{...}
 {col 28}Distribution by percentiles
 
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/Bottom40.aspx":b40}}{...}
+{col 8}{bf:b40}{...}
 {col 28}The profiles for the bottom 40 and other income groups
 
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/Official%20Poverty.aspx":oph}}{...}
-{col 28}Official poverty headcount
+{col 8}{bf:gic}{...}
+{col 28}Growth incidence curves
+
+{col 8}{bf:lab}{...}
+{col 28}Labor Market Indicators by demographic group
+
+{col 8}{bf:lip}{...}
+{col 28}LIPI (Labor Income Poverty Index)
+
+{col 8}{bf:reg}{...}
+{col 28}Regional and subregional distribution of poverty
+
+{col 8}{bf:nin}{...}
+{col 28}NINIs - Youth (Ni estudian ni trabajan)
+
+{col 8}{bf:gen}{...}
+{col 28}Gender - education and health WDI indicators
+
+{col 8}{bf:hoi}{...}
+{col 28}HOI - Human Opportunity Index
+
+{col 8}{bf:hos}{...}
+{col 28}HOI - subnational - for lowest disaggregation level that is representative
+
 
 {col 8}   {c TLC}{hline 35}{c TRC}
-{col 8}{hline 3}{c RT}{it: Two cross-sections (range needed) }{c LT}{hline}
+{col 8}{hline 3}{c RT}{it: Two period dashboards }{c LT}{hline}
 {col 8}   {c BLC}{hline 35}{c BRC}
 
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/growthbottom40.aspx":shp}}{...}
+{col 8}{bf:shp}{...}
 {col 28}Shared prosperity indicators
 
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/Headcount.aspx":drd}}{...}
-{col 28}Datt-Ravallion decomposition
+{col 8}{bf:drd}{...}
+{col 28}Datt-Ravallion decomposition (Poverty drivers)
 
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/Headcount.aspx":bde}}{...}
-{col 28}Barros (income source) decomposition
+{col 8}{bf:bde}{...}
+{col 28}Barros (Shapley) - Poverty and inequality decomposition by income source and gender
 
-{col 8}   {c TLC}{hline 24}{c TRC}
-{col 8}{hline 3}{c RT}{it: CEDLAS (update needed) }{c LT}{hline}
-{col 8}   {c BLC}{hline 24}{c BRC}
+{col 8}{bf:gis}{...}
+{col 28}Growth Incidence curve by income source
 
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/Headcount.aspx":dem}}{...}
-{col 28}Demographic characteristics
-
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/Headcount.aspx":dur}}{...}
-{col 28}Durable goods
-
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/Headcount.aspx":edu}}{...}
-{col 28}Educational outcomes
-
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/Headcount.aspx":hou}}{...}
-{col 28}Housing outcomes
-
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/Headcount.aspx":inc}}{...}
-{col 28}Income indicators
-
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/Headcount.aspx":ine}}{...}
-{col 28}Inequality indices e.g., Gini, theil, etc
-
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/Headcount.aspx":pov}}{...}
-{col 28}Poverty numbers.
-
-{col 8}{bf:{browse "http://globalpractices.worldbank.org/teamsites/Poverty/LACDataLab/SitePages/Headcount.aspx":emp}}{...}
-{col 28}Labor market indicators
+{col 8}{bf:hod}{...}
+{col 28}HOI Decomposition (D-Index)
 
 {col 8}   {c TLC}{hline 25}{c TRC}
 {col 8}{hline 3}{c RT}{it: Second order dashboards }{c LT}{hline}
 {col 8}   {c BLC}{hline 25}{c BRC}
 
-{col 8}{bf:{browse "http://www.worldbank.org/en/topic/poverty/lac-equity-lab1/overview":eho}}{...}
+{col 8}{bf:eho}{...}
 {col 28}External Homepage Overview
 
 {col 8}{hline 61}
@@ -324,11 +324,14 @@ Let us assume that we are going to replace the poverty, inequality and bottom 40
 
 {title:Author}
 {p}
-{p 4 4 4}R.Andres Castaneda, The World Bank{p_end}
-{p 6 6 4}Email {browse "acastanedaa@worldbank.org":acastanedaa@worldbank.org}{p_end}
+{p 4 4 4}Natalia Garcia Pena Bersh, The World Bank 
+Email: {browse "acastanedaa@worldbank.org":ngarciapenabersh@worldbank.org},
 
-{p 4 4 4}Felipe Balcazar, The World Bank{p_end}
-{p 6 6 4}Email {browse "cbalcazarsalazar@worldbank.org":cbalcazarsalazar@worldbank.org}{p_end}
+R.Andres Castaneda, The World Bank
+Email: {browse "acastanedaa@worldbank.org":acastanedaa@worldbank.org},
+
+Felipe Balcazar, The World Bank
+Email: {browse "cbalcazarsalazar@worldbank.org":cbalcazarsalazar@worldbank.org}
 
 
 {title:Related commands:}
