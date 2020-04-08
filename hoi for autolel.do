@@ -679,7 +679,8 @@ replace Subregion = state if state != ""
 *===============================================================================================*/
 
 
-encode Opportunity, gen(Oportunidades)
+encode Opportunity, gen(
+)
 label define Oportunidades  1 "Electricidad" 2 "primaria completa" 3 "Internet" 4 "Teléfono móvil" 5 "Saneamiento"  6 "Matrícula Escolar"  7 "Agua", modify
 
 encode Universe, gen(Universo)

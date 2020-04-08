@@ -41,6 +41,26 @@ foreach type of local types {
 
 		noi di in white "Running - pov line `pl'"
 		if strpos("`type'","gender")!=0 {
+		
+			* Check equation:
+			cap drop ipcf_aux
+			cap drop pc_otinla_g
+			gen double pc_otinla_g = ipcf_ppp11 - (dependency*((pocup_man*ila_man_ocup)+(pocup_woman*ila_woman_ocup)))
+			
+			gen double ipcf_aux = (dependency*((pocup_man*ila_man_ocup)+(pocup_woman*ila_woman_ocup))) + pc_otinla_g
+			sum ipcf_aux
+			local m_aux = round(`r(mean)' ,0.0001)
+			sum ipcf_ppp11
+			local m_ppp = round(`r(mean)' ,0.0001)
+			
+
+			if `m_aux' != `m_ppp' {
+				di in red "`country' `iso' `year1' `year2' `dtype' ipcf_aux != ipcf_ppp11"
+				mmmm
+			}
+			
+			
+		
 			noi di in white "Running adecomp by `type', for pov line `pl'"
 			noi adecomp ipcf_ppp11 pocup_man ila_man_ocup pocup_woman ila_woman_ocup  pc_otinla_g  dependency ///
 			[w=pondera] , by(year) eq(c6*((c1*c2)+(c3*c4))+c5) varpl(lp_`pl'usd_ppp) in(fgt0 fgt1 fgt2 gini)
@@ -62,6 +82,29 @@ foreach type of local types {
 		}
 		* By income source
 		if strpos("`type'","incsource")!=0 {
+		
+			* Check equation
+			cap drop ipcf_aux
+			cap drop pc_otinla_ic
+			gen double pc_otinla_ic = ipcf_ppp11 - ((pocup_all*ila_all_ocup*dependency) + pc_itranext_ppp11 + pc_itrane_ppp11 + pc_ijubi_ppp11)
+			
+			gen double ipcf_aux = (pocup_all*ila_all_ocup*dependency) + pc_itranext_ppp11 + pc_itrane_ppp11 + pc_ijubi_ppp11 + pc_otinla_ic 
+			
+	
+			* Diff between ipcf_aux and ipcf_ppp11 for CHL-1.90 is at the 5th decimal, so I round
+			sum ipcf_aux
+			local m_aux = round(`r(mean)' ,0.0001)
+			sum ipcf_ppp11
+			local m_ppp = round(`r(mean)' ,0.0001)
+			
+
+			if `m_aux' != `m_ppp' {
+				di in red "`country' `iso' `year1' `year2' `dtype' ipcf_aux != ipcf_ppp11"
+				mmmm
+			}
+			
+		
+		
 			noi di in white "Running adecomp by `type', for pov line `pl'"
 		
 			noi adecomp ipcf_ppp11 pocup_all ila_all_ocup dependency pc_itranext_ppp11 pc_itrane_ppp11 pc_ijubi_ppp11 pc_otinla_ic  [w=pondera] , by(year) eq((c1*c2*c3)+c4+c5+c6+c7) varpl(lp_`pl'usd_ppp) in(fgt0 fgt1 fgt2 gini) 

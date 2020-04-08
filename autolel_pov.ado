@@ -24,6 +24,14 @@ local mclines05   "1000 5000"
 local povlines11  "190 320 550"
 local mclines11   "1300 7000"
 
+*TEMP ERASEEEE
+rename ipcf_ppp11 aux
+gen double ipcf_ppp11 = ((ipcf*ipc11_sedlac)/ipc_sedlac)/(ppp11*conversion)
+* noi di in red "HOLA AUTOLEL POV 30"
+* rename ipcf_ppp11 aux1
+* gen ipcf_ppp11  = 1
+drop if ipcf_ppp11 ==.
+
 cap noi  {
 	foreach ppp in /*"05"*/ "11" {
 		local groups ""                     // middle  class thresholds 
@@ -33,15 +41,15 @@ cap noi  {
 			local groups "`groups' h`l' g`l' s`l'"
 			
 			* headcount
-			gen `h`l'' = ipcf_ppp`ppp' < lp_`l'usd_ppp if (ipcf_ppp`ppp' != .)
+			gen double `h`l'' = ipcf_ppp`ppp' < lp_`l'usd_ppp if (ipcf_ppp`ppp' != .)
 			
 			* GAP
-			gen `g`l'' = 0 if ipcf_ppp`ppp' != .
+			gen double  `g`l'' = 0 if ipcf_ppp`ppp' != .
 			replace `g`l'' = (1 - ipcf_ppp`ppp'/lp_`l'usd_ppp) if /// 
 			(ipcf_ppp`ppp' < lp_`l'usd_ppp & ipcf_ppp`ppp' != .)
 			
 			* Severity
-			gen `s`l'' = 0 if ipcf_ppp`ppp' != .
+			gen double  `s`l'' = 0 if ipcf_ppp`ppp' != .
 			replace `s`l'' = (1 - ipcf_ppp`ppp'/lp_`l'usd_ppp)^2 if /// 
 			(ipcf_ppp`ppp' < lp_`l'usd_ppp & ipcf_ppp`ppp' != .)
 			
@@ -52,9 +60,9 @@ cap noi  {
 			tempvar h`thd'`mline'
 			
 			local groups "`groups' h`thd'`mline'"
-			gen `h`thd'`mline''  = (ipcf_ppp`ppp' >= lp_`thd'usd_ppp  & ///
+			gen double `h`thd'`mline''  = (ipcf_ppp`ppp' >= lp_`thd'usd_ppp  & ///
 			ipcf_ppp`ppp' < lp_`mline'usd_ppp)
-			local thd = `mline' // threshold
+			local thd = `mline' // threshold // NATALIA DOUBLE
 		}
 		
 		foreach group of local groups {

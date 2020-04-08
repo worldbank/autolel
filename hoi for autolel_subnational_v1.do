@@ -131,7 +131,7 @@ cap confirm var ${`var'}
 * Progress in school
 **************************************
 * Some countries have different primary school systems: BRA (76), GTM (320), NIC (558)
-if inlist(`country', 76, 320, 558)	local aux = 1
+if inlist(`iso', 76, 320, 558)	local aux = 1
 else local aux = 0
 	
 * Finished primary school
@@ -232,7 +232,7 @@ local depvar3 " ${pric} "         // for age range [12 -  16]
 global cov1 "yedu_head male male_head lipcf_cte urban popmom number_childs"
 	
 * Covariables for pric (add dummies for age & age2)
-if inlist(`country', 76, 320, 558) global cov2 " _Iage_14 _Iage_15 _Iage_16 _Iage_17 yedu_head male male_head lipcf_cte urban popmom number_childs" 
+if inlist(`iso', 76, 320, 558) global cov2 " _Iage_14 _Iage_15 _Iage_16 _Iage_17 yedu_head male male_head lipcf_cte urban popmom number_childs" 
 else global cov2 " _Iage_13 _Iage_14 _Iage_15 _Iage_16 yedu_head male male_head lipcf_cte urban popmom number_childs"
 
 
@@ -241,7 +241,7 @@ else global cov2 " _Iage_13 _Iage_14 _Iage_15 _Iage_16 yedu_head male male_head 
 tempfile hoi_sub
 tempname h_sub	
 
-postfile `h_sub' str40(state) statecode country circa year str48(Opportunity var) double(obs_indicator prob dindex hoi sehoi)  using `hoi_sub', replace	// Sub-national HOI
+postfile `h_sub' str40(state) statecode country year str48(Opportunity var) double(obs_indicator prob dindex hoi sehoi)  using `hoi_sub', replace	// Sub-national HOI
 
 * Subnational loop:
 levelsof states, local(states)   
@@ -270,13 +270,13 @@ foreach state of local states { // loop for states
 			* HOI - All the sample
 			`noi_hoi' `dep' $cov1 [fw=weight] if age>=`min_age' & age<=`max_age' & states == `state', estim `asis'
 				
-			post `h_sub' ("`lab_states'") (`state') (`iso') (`circa') (`year') ("`label'") ("`dep'")  (`e(N)') (`r(p_1)') (`r(d_1)') (`r(hoi_1)') (`r(se_oi_1)')
+			post `h_sub' ("`lab_states'") (`state') (`iso') (`year') ("`label'") ("`dep'")  (`e(N)') (`r(p_1)') (`r(d_1)') (`r(hoi_1)') (`r(se_oi_1)')
 		} // end loop if opportunity is not defined
 		if `row' == 1 {	// Loop if opportunity is not defined
 			
 			qui: sum `dep' if age>=`min_age' & age<=`max_age' & states == `state'		
 			if `r(mean)' == 1 {								
-				post `h_sub' ("`lab_states'") (`state') (`iso') (`circa') (`year') ("`label'") ("`dep'")  (`r(N)') (`r(mean)'*100) (0) (`r(mean)'*100) (0)
+				post `h_sub' ("`lab_states'") (`state') (`iso') (`year') ("`label'") ("`dep'")  (`r(N)') (`r(mean)'*100) (0) (`r(mean)'*100) (0)
 			}
 		}	// end loop if opportunity is defined
 	}	// end of loop for opportunities group # 1
@@ -292,14 +292,14 @@ foreach state of local states { // loop for states
 			* HOI - All the sample
 			`noi_hoi' `dep' $cov1 [fw=weight] if age>=10 & age<=14 & states == `state', estim `asis'
 			
-			post `h_sub' ("`lab_states'") (`state') (`iso') (`circa') (`year') ("School Enrollment")  ("`dep'") (`e(N)') (`r(p_1)') (`r(d_1)') (`r(hoi_1)') (`r(se_oi_1)')
+			post `h_sub' ("`lab_states'") (`state') (`iso') (`year') ("School Enrollment")  ("`dep'") (`e(N)') (`r(p_1)') (`r(d_1)') (`r(hoi_1)') (`r(se_oi_1)')
 			
 		}
 
 		if `row' == 1 {	// Loop if opportunity is not defined
 			qui: sum `dep' if age>=10 & age<=14 & states == `state'		
 			if `r(mean)' == 1 {								
-				post `h_sub' ("`lab_states'") (`state') (`iso') (`circa') (`year') ("School Enrollment")  ("`dep'") (`r(N)') (`r(mean)'*100) (0) (`r(mean)'*100) (0)
+				post `h_sub' ("`lab_states'") (`state') (`iso') (`year') ("School Enrollment")  ("`dep'") (`r(N)') (`r(mean)'*100) (0) (`r(mean)'*100) (0)
 			}	// end loop if opportunity is not defined
 		}	// end loop if opportunity is defined
 	}	// end of loop for opportunities group # 2
@@ -314,26 +314,26 @@ foreach dep in `depvar3' {	// loop for opportunities group # 3
 	if `row' == 2 {	// loop if opportunity is defined
 	
 	* Some countries have different primary school systems: BRA (76), GTM (320), NIC (558)
-		if inlist(`country', 76, 320, 558)	{
+		if inlist(`iso', 76, 320, 558)	{
 			`noi_hoi' `dep' $cov2 [fw=weight] if age>=13 & age<=17 & states == `state', adjust1(_Iage_14=1 _Iage_15=0 _Iage_16=0 _Iage_17=0) estim asis
 		}
 		else {
 			`noi_hoi' `dep' $cov2 [fw=weight] if age>=12 & age<=16 & states == `state', adjust1(_Iage_13=1 _Iage_14=0 _Iage_15=0 _Iage_16=0) estim asis
 		}
 		
-		post `h_sub' ("`lab_states'") (`state') (`iso') (`circa') (`year') ("Finished primary School")  ("`dep'") (`e(N)') (`r(p_1)') (`r(d_1)') (`r(hoi_1)') (`r(se_oi_1)')		
+		post `h_sub' ("`lab_states'") (`state') (`iso') (`year') ("Finished primary School")  ("`dep'") (`e(N)') (`r(p_1)') (`r(d_1)') (`r(hoi_1)') (`r(se_oi_1)')		
 	}
 
 	if `row' == 1 {	// Loop if opportunity is not defined
 		
-		if inlist(`country', 76, 320, 558)	  {
+		if inlist(`iso', 76, 320, 558)	  {
 			qui: sum `dep' if age>=13 & age<=17 & states == `state'		
 		}
 		else {
 			qui: sum `dep' if age>=12 & age<=16 & states == `state'	
 		}
 		if `r(mean)' == 1 {								
-			post `h_sub' ("`lab_states'") (`state') (`iso') (`circa') (`year') ("Finished primary School")  ("`dep'") (`r(N)') (`r(mean)'*100) (0) (`r(mean)'*100) (0)
+			post `h_sub' ("`lab_states'") (`state') (`iso') (`year') ("Finished primary School")  ("`dep'") (`r(N)') (`r(mean)'*100) (0) (`r(mean)'*100) (0)
 		}	
 	}	// end loop if opportunity is defined
 }	// end of loop for opportunities group # 3

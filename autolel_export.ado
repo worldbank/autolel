@@ -8,6 +8,7 @@ program define autolel_export
 syntax, [ byarea module(string) path(string) replace cedlas]  
 
 * qui {
+* 1. Load data and set export format
 noi di in green "***************** Exporting `module' ******************"
 tempfile _module_calc_temp
 if ("`cedlas'"!="") {
@@ -75,7 +76,8 @@ else {  // non-cedlas calculations
 	
 	if "`module'"!="eho" { // for external home page, replace all file
 	
-		*Generate locals of variables for merge
+		*2. Generate locals of variables for merge (ADD NEW SUBPROGRAMS)
+		******************************************************************
 		local id_year year
 		local id_indicator indicator
 		if inlist("`module'", "drd", "bde",	"shp", "gis") local id_year year1 year2
@@ -96,8 +98,8 @@ else {  // non-cedlas calculations
 		if inlist("`module'", "gis")  local id_indicator percentiles inc_type
 		if inlist("`module'", "reg")  local id_indicator type pline
 		if inlist("`module'", "nin")  local id_indicator status ages gender
-		
-		* if inlist("`module'", "eho")  local id_indicator indicator zone universe measure
+		if inlist("`module'", "hoi")  local id_indicator Indicator Opportunity  Universe
+		if inlist("`module'", "hos")  local id_indicator Indicator Opportunity statecode
 		if inlist("`module'", "oph")  local id_indicator 
 		
 		local varmerge "country `id_year' `area' `id_indicator'"

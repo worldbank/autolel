@@ -68,6 +68,10 @@ subregion							/// HOI option for subregion
 ]
 
 
+
+						
+
+
 * PERIOD(string)						/// Datalib period for LABLAC -string for indexing
 
 /*====================================================================
@@ -81,7 +85,7 @@ quietly {
 		if (_rc) ssc install `pro'
 	}
 	
-	autolel_defaults, globals
+	autolel_defaults, globals `survey'
 	local lel_cedlasgen   = "${lel_cedlasgen}"
 	local lel_lelgen      = "${lel_lelgen}"
 	* local lel_decomp      = "${lel_decomp}" // this can be removed in the future
@@ -136,7 +140,7 @@ quietly {
 	
 	** default is all years
 	if ("`years'" == "") {
-			autolel_defaults , years
+			autolel_defaults , years `survey'
 			local years = "`r(years)'"
 	}  //  end of years condition 
 	
@@ -168,12 +172,12 @@ quietly {
 	
 	if ("`update'"=="update") {
 		if ("`countries'" == "")  {
-			autolel_defaults , countries lac
+			autolel_defaults , countries lac `survey'
 			local countries= "`r(countries)'"
 		}
 		
 		if ("`years'" == "") {
-			autolel_defaults , years
+			autolel_defaults , years `survey'
 			local years = "`r(years)'"
 		}  //  end of years condition 
 	}  // end of update selection 
@@ -217,7 +221,7 @@ quietly {
 	
 	*===============================================================================
 	* PATHS SET-UP AND AUXILIARY FILES
-	autolel_defaults, path("`path'") paths
+	autolel_defaults, path("`path'") paths `survey'
 	
 	if "`update'"=="update" {
 		autolel_filecheck, modules("`calculation'")  //  CHECK. ado-file modified	
@@ -229,7 +233,7 @@ quietly {
 	if "`erase'"!="" {
 
 		foreach calc of local calculation {
-			autolel_defaults, globals
+			autolel_defaults, globals `survey'
 			cap confirm file "${output_LEL}\\`calc'.dta"	
 			if _rc {
 				noi di in red "${output_LEL}\\`calc'.dta doesn't exist"
@@ -357,11 +361,13 @@ quietly {
 								continue
 							}
 							else {
+								if "`survey'"== "" local survey "survey(`r(survname)')"
 								count
 								if `r(N)'==0 noi disp as err "W: " as text "`country' - `year'-  `q' has 0 obs"
 								else noi disp in white "`country' - `year' - `q' loaded"
 								cap confirm var ipcf_ppp11
 								if _rc noi di as err "ipcf_ppp11 not found"
+								
 								
 							} // END else
 							append using `lipi_'
@@ -380,13 +386,16 @@ quietly {
 						* FOR GMD datasets: HOI dashboards - HOI and HOI subnational and troubleshoot
 						global troubleshoot ""
 						if inlist("`crosscals'","hoi","hos") {
-							local modules "mod(gmd pov)" // GMD
-							global troubleshoot "troubleshoot" // keep track in HOI
+							* Set default to gmd
+							if ("`gmd'" == "" & "`sedlac'" == "") local gmd gmd
+							if ("`gmd'" != "") local modules "mod(gmd pov)" // GMD
+							if ("`sedlac'" != "") local modules "mod(all)" // SEDLAC
+							global troubleshoot "`troubleshoot'" // keep track in HOI
 						}
 						local gmd_options  "`water' `elect' `sewage' `internet' `celular' `pric' `attendance' `spouse' `male' `subregion' `gmd' `sedlac'"
-						if ("`troubleshoot'"!= "" & "`gmd_options'"!="" {
-							noi di in white "Line 382: local gmd_options are -`water' `elect' `sewage' `internet' `celular' `pric' `attendance' `spouse' `male' `subregion' `gmd' `sedlac'"
-						}
+						* if ("`troubleshoot'"!= "" & "`gmd_options'"!="") {
+							* noi di in white "Line 382: local gmd_options are -`water' `elect' `sewage' `internet' `celular' `pric' `attendance' `spouse' `male' `subregion' `gmd' `sedlac'"
+						* }
 						
 
 						if "`troubleshoot'"!= ""  noi di in white "Line 385: cap  datalib, country(`country') `yearsopt' `circaopt' `project' `modules' `repath' `repo' `vermast' `veralt' `survey' `period'  clear" 
@@ -401,7 +410,9 @@ quietly {
 						}
 						else {
 							noi disp in white "`country' - `year' loaded"
+							cap drop if ipcf_ppp11==.
 						}
+						
 					} // END SEDLAC CONDITION
 				
 ***** Calc loop ***********************************************************
@@ -413,7 +424,7 @@ quietly {
 							continue
 						}
 						
-						
+						noi di in white "Line 427: Running autolel_`calc', `country' `year'"
 						autolel_`calc', country(`country') year(`year') iso(`countryiso3') `gmd_options' `byarea' // calculations
 /*========================================================================
 	3.3. CROSS SECTION series - Save results
@@ -477,8 +488,8 @@ quietly {
 				
 				* Comparability: Keep latest comparable series with exceptions:
 				autolel_labels, countries module("gic")
-				autolel_defaults, series_breaks
-				autolel_defaults, comp_gic
+				autolel_defaults, series_breaks `survey'
+				autolel_defaults, comp_gic `survey'
 				
 
 				* Reshape wide for Tableau parameters
@@ -492,7 +503,7 @@ quietly {
 				use `tempfile_`calc_aux''
 				
 				autolel_lip, merge
-				autolel_defaults, comp_lip
+				autolel_defaults, comp_lip `survey'
 				save `tempfile_`calc_aux'', replace
 				
 				
@@ -534,7 +545,7 @@ quietly {
 					local yearpairs "`range'"
 				}
 				if ("`update'" != "")  {   // Default pairs of years
-					autolel_defaults , twocross country(`country')
+					autolel_defaults , twocross country(`country') `survey'
 					local yearpairs "`r(twoyears)'"  	
 				}
 				
@@ -573,7 +584,10 @@ quietly {
 						noi disp as err "W:" as text "`country' - fp: `fp' not loaded"
 						continue
 					}
-					else noi disp in white "`country' - `fp' loaded"
+					else {
+						noi disp in white "`country' - `fp' loaded"
+						cap drop if ipcf_ppp11==.
+					}
 					
 					cap confirm var cohh
 					if (_rc) gen cohh = 1
@@ -597,7 +611,10 @@ quietly {
 						noi disp as err "W:" as text "`country' - sp: `sp' not loaded"
 						continue
 					}
-					else noi disp in white "`country' - `sp' loaded"
+					else {
+						noi disp in white "`country' - `sp' loaded"
+						cap drop if ipcf_ppp11==.
+					}
 						
 					cap confirm var cohh
 					if (_rc) gen cohh = 1
@@ -756,21 +773,22 @@ quietly {
 				
 				autolel_labels,  countries module("`calc'")
 				
-				autolel_defaults, circaman 	module("`calc'") export
+				autolel_defaults, circaman 	module("`calc'") export `survey'
 				
 				********************************************
 				*Series breaks
 				local seriesbreaks: list calculation & lel_seriesbreaks
 
 				if ("`seriesbreaks'"  != "") {
-					autolel_defaults, series_breaks module("`calc'")
+					autolel_defaults, series_breaks module("`calc'") `survey'
+					
 				}
 				**********************************************
 	
 	
 				
 				* Filters specific countries, years, regions not to include globally
-				autolel_defaults, filter
+				autolel_defaults, filter `survey'
 				
 				
 				if ("`save'" == "save" | "`path'" != "") ///
